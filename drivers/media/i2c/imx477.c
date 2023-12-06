@@ -1742,20 +1742,15 @@ static int imx477_start_streaming(struct imx477 *imx477)
 	imx477_write_reg(imx477, 0x0b05, IMX477_REG_VALUE_08BIT, !!dpc_enable);
 	imx477_write_reg(imx477, 0x0b06, IMX477_REG_VALUE_08BIT, !!dpc_enable);
 
-	/* Set vsync trigger mode */
-	if (trigger_mode != 0) {
-		/* trigger_mode == 1 for source, 2 for sink */
-		const u32 val = (trigger_mode == 1) ? 1 : 0;
-
-		imx477_write_reg(imx477, IMX477_REG_MC_MODE,
-				 IMX477_REG_VALUE_08BIT, 1);
-		imx477_write_reg(imx477, IMX477_REG_MS_SEL,
-				 IMX477_REG_VALUE_08BIT, val);
-		imx477_write_reg(imx477, IMX477_REG_XVS_IO_CTRL,
-				 IMX477_REG_VALUE_08BIT, val);
-		imx477_write_reg(imx477, IMX477_REG_EXTOUT_EN,
-				 IMX477_REG_VALUE_08BIT, val);
-	}
+	/* Set vsync trigger mode: 0=standalone, 1=source, 2=sink */
+	imx477_write_reg(imx477, IMX477_REG_MC_MODE,
+			 IMX477_REG_VALUE_08BIT, (trigger_mode > 0) ? 1 : 0);
+	imx477_write_reg(imx477, IMX477_REG_MS_SEL,
+			 IMX477_REG_VALUE_08BIT, (trigger_mode <= 1) ? 1 : 0);
+	imx477_write_reg(imx477, IMX477_REG_XVS_IO_CTRL,
+			 IMX477_REG_VALUE_08BIT, (trigger_mode == 1) ? 1 : 0);
+	imx477_write_reg(imx477, IMX477_REG_EXTOUT_EN,
+			 IMX477_REG_VALUE_08BIT, (trigger_mode == 1) ? 1 : 0);
 
 	/* Apply customized values from user */
 	ret =  __v4l2_ctrl_handler_setup(imx477->sd.ctrl_handler);
